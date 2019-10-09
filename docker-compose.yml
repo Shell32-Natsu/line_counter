@@ -7,30 +7,35 @@ services:
       - "80:80"
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
+    networks:
+      - cnt_network
 
   master-node:
     build:
       context: .
       dockerfile: master.Dockerfile
-    ports:
-      - "5999:5999"
+    expose:
+      - "5999"
     environment:
       VIRTUAL_HOST: ~.*
       FLASK_RUN_PORT: 5999
+      FLASK_ENV: development
+    networks:
+      - cnt_network
+    container_name: cnt_master
 
   slave-node:
     build:
       context: .
       dockerfile: slave.Dockerfile
-    ports:
-      - "6000:6000"
+    expose:
+      - "6000"
     environment:
       FLASK_RUN_PORT: 6000
+      FLASK_ENV: development
+    networks:
+      - cnt_network
 
 networks:
-  default:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet:  11.13.0.0/16
+  cnt_network:
+    external: true

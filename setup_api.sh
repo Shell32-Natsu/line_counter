@@ -19,15 +19,29 @@ function is_integer () {
   return 0
 }
 
-function start_nginx_container () {
-  _info "Starting nginx..."
+function create_network () {
+  _info "Creating network..."
+  local cidr="11.13.0.0/16"
+  local name="cnt_network"
+  docker network inspect $name > /dev/null 2>&1
+  if [ $? == 0 ]; then
+    _warn "Network $name may already exist. Skip creating."
+    return 0
+  fi
+  _debug "Network name: ${name}, CIDR: ${cidr}"
+  local id=$(docker network create --subnet $cidr $name)
+  _debug "Network id: ${id}"
+}
+
+function start_container () {
+  _info "Starting containers..."
   command -v docker-compose > /dev/null
   if [ $? != 0 ]; then
     _error "Cannot find docker-compose"
   fi
 
-  docker-compose build
-  docker-compose up
+  docker-compose -f docker-compose.yml build > /dev/null
+  docker-compose up -d --scale slave-node=$1
 }
 
 function main () {
@@ -39,7 +53,8 @@ function main () {
   fi
   _info "Setup API with $1 slave container"
   SLAVE_NUM=$1
-  start_nginx_container
+  create_network
+  start_container $1
 }
 
 main $@
