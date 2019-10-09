@@ -1,0 +1,36 @@
+version: '3'
+
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+
+  master-node:
+    build:
+      context: .
+      dockerfile: master.Dockerfile
+    ports:
+      - "5999:5999"
+    environment:
+      VIRTUAL_HOST: ~.*
+      FLASK_RUN_PORT: 5999
+
+  slave-node:
+    build:
+      context: .
+      dockerfile: slave.Dockerfile
+    ports:
+      - "6000:6000"
+    environment:
+      FLASK_RUN_PORT: 6000
+
+networks:
+  default:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet:  11.13.0.0/16

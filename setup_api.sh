@@ -19,19 +19,15 @@ function is_integer () {
   return 0
 }
 
-function start_master () {
-  _info "Starting master container..."
+function start_nginx_container () {
+  _info "Starting nginx..."
+  command -v docker-compose > /dev/null
+  if [ $? != 0 ]; then
+    _error "Cannot find docker-compose"
+  fi
 
-  _debug "Successfully started master container"
-}
-
-function start_slave() {
-  _info "Starting slave container..."
-  _info "Slave container to be started: ${SLAVE_NUM}"
-  for i in $(seq 1 $SLAVE_NUM); do
-    _debug "Starting $i / ${SLAVE_NUM}..."
-  done
-  _debug "Successfully started slave container"
+  docker-compose build
+  docker-compose up
 }
 
 function main () {
@@ -40,12 +36,10 @@ function main () {
   fi
   if ! is_integer $1; then
     _error "$1 is not a valid number"
-    usage
   fi
   _info "Setup API with $1 slave container"
   SLAVE_NUM=$1
-  start_master
-  start_slave
+  start_nginx_container
 }
 
 main $@
