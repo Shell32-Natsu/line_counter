@@ -1,8 +1,10 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import logging
 import requests
+import uuid
 
 app = Flask(__name__)
+app.url_map.strict_slashes = False
 slave_idx = 0
 
 slaves = []
@@ -31,5 +33,36 @@ def register_slave():
 
 
 @app.route("/counter", methods=["GET"])
-def counter():
-    pass
+def add_counter():
+    to = request.args.get("to", None, type=int)
+    if to is None:
+        return "Invalid 'to' argument", 400
+    app.logger.info("add_counter to={}".format(to))
+    counter_uuid = uuid.uuid4()
+    app.logger.info("add_counter uuid={}".format(counter_uuid))
+    idx = hash(str(counter_uuid)) % len(slaves)
+    slave = slaves[idx]
+    app.logger.info("add_counter slave={}:{}".format(slave[0], slave[1]))
+    r = requests.get(
+        url="http://{}:{}/add-counter".format(slave[0], slave[1]),
+        params={"to": to, "uuid": counter_uuid},
+    )
+    if not r.ok:
+        return r.text, r.status_code
+
+    return str(counter_uuid)
+
+
+@app.route("/counter/<uuid>", methods=["GET"])
+def get_counter(uuid):
+    app.logger.info("get_counter uuid={}".format(uuid))
+    idx = hash(uuid) % len(slaves)
+    slave = slaves[idx]
+    app.logger.info("add_counter slave={}:{}".format(slave[0], slave[1]))
+    r = requests.get(
+        url="http://{}:{}/get-counter".format(slave[0], slave[1]), params={"uuid": uuid}
+    )
+    if not r.ok:
+        return r.text, r.status_code
+
+    return jsonify(r.json()), r.status_code
