@@ -7,8 +7,8 @@ logging.getLogger().setLevel(logging.INFO)
 app = Flask(__name__)
 
 @app.route("/")
-def hello():
-    return "Slave"
+def main():
+    return "{}\n".format(socket.getfqdn())
 
 def register_to_master():
     # Register to master

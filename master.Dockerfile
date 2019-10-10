@@ -6,4 +6,4 @@ ENV FLASK_RUN_PORT 5999
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 COPY ./master/* /code/
-CMD ["flask", "run"]
+CMD ["flask", "run", "--with-threads"]

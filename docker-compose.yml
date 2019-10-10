@@ -9,6 +9,7 @@ services:
       - /var/run/docker.sock:/tmp/docker.sock:ro
     networks:
       - cnt_network
+    container_name: nginx-proxy
 
   master-node:
     build:
