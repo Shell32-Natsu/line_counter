@@ -66,6 +66,9 @@ def get_counter():
     cnt = counters.get_counter(uuid)
     if cnt is None:
         return "Counter {} is not found on {}".format(uuid, socket.getfqdn()), 404
+    if cnt.get_current() >= cnt.to:
+        counters.delete_counter
+        return "Counter {} is not found on {}".format(uuid, socket.getfqdn()), 404
 
     return jsonify({"current": cnt.get_current(), "to": cnt.to})
 
