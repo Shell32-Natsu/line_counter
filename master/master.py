@@ -7,6 +7,7 @@ slave_idx = 0
 
 slaves = []
 
+
 @app.route("/")
 def main():
     if len(slaves) == 0:
@@ -14,13 +15,11 @@ def main():
     global slave_idx
     slave = slaves[slave_idx]
     slave_idx = (slave_idx + 1) % len(slaves)
-    r = requests.get(
-        url="http://{}:{}".format(slave[0], slave[1])
-    )
+    r = requests.get(url="http://{}:{}".format(slave[0], slave[1]))
     return r.text
-    
 
-@app.route("/register-slave" ,methods=["GET"])
+
+@app.route("/register-slave", methods=["GET"])
 def register_slave():
     host = request.args.get("host", "")
     port = request.args.get("port", "")
@@ -29,3 +28,8 @@ def register_slave():
     if (host, port) not in slaves:
         slaves.append((host, port))
     return "ok"
+
+
+@app.route("/counter", methods=["GET"])
+def counter():
+    pass
