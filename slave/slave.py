@@ -41,6 +41,19 @@ class Counters:
                 self.counters.remove(cnt)
                 return
 
+    def all_counters_uuid(self):
+        res = []
+        to_delete = []
+        for cnt in self.counters:
+            if cnt.get_current() >= cnt.to:
+                to_delete.append(cnt.uuid)
+            else:
+                res.append(cnt.uuid)
+
+        for uuid in to_delete:
+            self.delete_counter(uuid)
+        return res
+
 
 counters = Counters()
 
@@ -54,7 +67,6 @@ def main():
 def add_counter():
     to = request.args.get("to", None, type=int)
     uuid = request.args.get("uuid", None, type=str)
-    global counters
     counters.add_counter(Counter(to, uuid))
     return ""
 
@@ -62,7 +74,6 @@ def add_counter():
 @app.route("/get-counter", methods=["GET"])
 def get_counter():
     uuid = request.args.get("uuid", None, type=str)
-    global counters
     cnt = counters.get_counter(uuid)
     if cnt is None:
         return "Counter {} is not found on {}".format(uuid, socket.getfqdn()), 404
@@ -71,6 +82,11 @@ def get_counter():
         return "Counter {} is not found on {}".format(uuid, socket.getfqdn()), 404
 
     return jsonify({"current": cnt.get_current(), "to": cnt.to})
+
+
+@app.route("/all-counter", methods=["GET"])
+def all_counter():
+    return jsonify(counters.all_counters_uuid())
 
 
 def register_to_master():

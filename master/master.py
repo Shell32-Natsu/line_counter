@@ -32,11 +32,20 @@ def register_slave():
     return "ok"
 
 
+def all_counter():
+    res = []
+    for slave in slaves:
+        r = requests.get(url="http://{}:{}/all-counter".format(slave[0], slave[1]))
+        res = res + r.json()
+    return "\n".join(res)
+
+
 @app.route("/counter", methods=["GET"])
 def add_counter():
     to = request.args.get("to", None, type=int)
     if to is None:
-        return "Invalid 'to' argument", 400
+        # Get all uuid
+        return all_counter()
     app.logger.info("add_counter to={}".format(to))
     counter_uuid = uuid.uuid4()
     app.logger.info("add_counter uuid={}".format(counter_uuid))
