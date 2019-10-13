@@ -1,3 +1,7 @@
+Author: Donny Xia
+
+Email: xiadong.main@gmail.com
+
 # Requirements
 
 This project has been tested in following environment:
