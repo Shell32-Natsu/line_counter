@@ -130,6 +130,16 @@ def get_counter():
     return jsonify({"current": cnt.get_current(), "to": cnt.to})
 
 
+@app.route("/delete-counter", methods=["GET"])
+def delete_counter():
+    uuid = request.args.get("uuid", None, type=str)
+    cnt = counters.get_counter(uuid)
+    if cnt is None:
+        return "Counter {} is not found on {}".format(uuid, socket.getfqdn()), 404
+    counters.delete_counter(uuid)
+    return ""
+
+
 @app.route("/all-counter", methods=["GET"])
 def all_counter():
     return jsonify(counters.all_counters_uuid())

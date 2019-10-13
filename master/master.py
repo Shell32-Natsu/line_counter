@@ -40,13 +40,18 @@ def all_counter():
 
 
 @app.route("/counter", methods=["GET"])
+def all_counter_handler():
+    return all_counter()
+
+
+@app.route("/counter", methods=["POST"])
 def add_counter():
     if len(slaves) == 0:
         return "No slave nodes", 503
     to = request.args.get("to", None, type=int)
     if to is None:
         # Get all uuid
-        return all_counter()
+        return "Argument 'to' is required", 400
     app.logger.info("add_counter to={}".format(to))
     counter_uuid = uuid.uuid4()
     app.logger.info("add_counter uuid={}".format(counter_uuid))
@@ -70,7 +75,7 @@ def get_counter(uuid):
     app.logger.info("get_counter uuid={}".format(uuid))
     idx = hash(uuid) % len(slaves)
     slave = slaves[idx]
-    app.logger.info("add_counter slave={}:{}".format(slave[0], slave[1]))
+    app.logger.info("get_counter slave={}:{}".format(slave[0], slave[1]))
     r = requests.get(
         url="http://{}:{}/get-counter".format(slave[0], slave[1]), params={"uuid": uuid}
     )
@@ -78,3 +83,20 @@ def get_counter(uuid):
         return r.text, r.status_code
 
     return jsonify(r.json()), r.status_code
+
+
+@app.route("/counter/<uuid>/stop", methods=["POST"])
+def delete_counter(uuid):
+    if len(slaves) == 0:
+        return "No slave nodes", 503
+    app.logger.info("delete_counter uuid={}".format(uuid))
+    idx = hash(uuid) % len(slaves)
+    slave = slaves[idx]
+    app.logger.info("delete_counter slave={}:{}".format(slave[0], slave[1]))
+    r = requests.get(
+        url="http://{}:{}/delete-counter".format(slave[0], slave[1]), params={"uuid": uuid}
+    )
+    if not r.ok:
+        return r.text, r.status_code
+
+    return r.text, r.status_code

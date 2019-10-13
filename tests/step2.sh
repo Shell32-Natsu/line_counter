@@ -16,5 +16,5 @@ function wait_counter () {
   done
 }
 
-UUID=$(curl -s "http://${NGINX_HOST}/counter?to=5")
+UUID=$(curl -s -X POST "http://${NGINX_HOST}/counter?to=5")
 wait_counter
