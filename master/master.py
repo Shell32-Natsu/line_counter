@@ -33,15 +33,16 @@ def register_slave():
 
 
 def all_counter():
-    res = []
-    for slave in slaves:
-        r = requests.get(url="http://{}:{}/all-counter".format(slave[0], slave[1]))
-        res = res + r.json()
+    slave = slaves[0]
+    r = requests.get(url="http://{}:{}/all-counter".format(slave[0], slave[1]))
+    res = r.json()
     return "\n".join(res)
 
 
 @app.route("/counter", methods=["GET"])
 def add_counter():
+    if len(slaves) == 0:
+        return "No slave nodes", 503
     to = request.args.get("to", None, type=int)
     if to is None:
         # Get all uuid
@@ -64,6 +65,8 @@ def add_counter():
 
 @app.route("/counter/<uuid>", methods=["GET"])
 def get_counter(uuid):
+    if len(slaves) == 0:
+        return "No slave nodes", 503
     app.logger.info("get_counter uuid={}".format(uuid))
     idx = hash(uuid) % len(slaves)
     slave = slaves[idx]
