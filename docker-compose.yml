@@ -36,7 +36,12 @@ services:
       FLASK_ENV: development
     networks:
       - cnt_network
+    volumes:
+      - tmp:/data
 
 networks:
   cnt_network:
     external: true
+
+volumes:
+  tmp:

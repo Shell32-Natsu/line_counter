@@ -41,8 +41,12 @@ function start_container () {
   fi
 
   docker-compose -f docker-compose.yml build > /dev/null
-  docker-compose up -d  nginx-proxy
-  docker-compose up -d  master-node
+  docker-compose up -d nginx-proxy
+  _debug "Resetting nodes..."
+  docker-compose up -d --scale master-node=0 master-node
+  docker-compose up -d --scale slave-node=0 slave-node
+  _info "Starting nodes..."
+  docker-compose up -d master-node
   docker-compose up -d --scale slave-node=$1 slave-node
 }
 
